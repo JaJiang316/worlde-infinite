@@ -5902,7 +5902,7 @@ const checkRow = () => {
     let guessedWord = guessWord.map(letter => letter.letter).join('');
     if(currentTile > 4 && word_list.includes(guessedWord.toLowerCase())){
         const guess = guessedRows[currentRow].join('').toUpperCase();
-        flipTile();
+        // flipTile();
         if(guess == word_chosen){
             let result = document.querySelector('.result');
             result.innerText = 'Great Job!';
@@ -5915,8 +5915,7 @@ const checkRow = () => {
                 high_Score.innerText = "High Score: " + highScore;
                 high_Score.setAttribute('value', highScore);
             }
-            (async () => await new Promise(resolve => setTimeout(resolve, 5000)))();
-            // setTimeout(() => {}, 5000);
+            sleep(5000).then(() => {result.innerText = ''; result.style.visibility = 'hidden'});
             reloadGame();
         }
         else {
@@ -5925,19 +5924,19 @@ const checkRow = () => {
                 result.innerText = 'Game Over! The word was ' + word_chosen;
                 result.style.visibility = 'visible';
                 gameOver = true;
-                (async () => await new Promise(resolve => setTimeout(resolve, 5000)))();
+                sleep(4000).then(() => {result.innerText = ''; result.style.visibility = 'hidden'});
                 reloadGame();
                 currentScore = 0;
                 current_Score.innerText = "Score: " + currentScore;
             }
             else if(currentRow < 5 && gameOver == false) {
+                flipTile();
                 currentTile = 0;
                 currentRow++;
                 let result = document.querySelector('.result');
                 result.innerText = 'Try Again!';
                 result.style.visibility = 'visible';
-                (async () => await new Promise(resolve => setTimeout(() => { result.innerText = ''; result.style.visibility = 'hidden' }, 3000)))();
-                // setTimeout(() => { result.innerText = ''; result.style.visibility = 'hidden' }, 2000);
+                sleep(4000).then(() => { result.innerText = ''; result.style.visibility = 'hidden'});
             }
         }
         localStorage.setItem('users', JSON.stringify({
@@ -5952,7 +5951,7 @@ const checkRow = () => {
         let result = document.querySelector('.result');
         result.innerText = 'Not in word list!';
         result.style.visibility = 'visible';
-        (async () => await new Promise(resolve => setTimeout(() => { result.innerText = ''; result.style.visibility = 'hidden' }, 3000)))();
+        sleep(3000).then(() => { result.innerText = ''; result.style.visibility = 'hidden' });
         // setTimeout(() => { result.innerText = ''; result.style.visibility = 'hidden' }, 2000);
     }
 }
@@ -6023,6 +6022,7 @@ const reloadGame = () => {
         const button = document.createElement('button');
         button.innerText = key;
         button.setAttribute('id', key);
+        button.setAttribute('class', "");
         button.addEventListener('click', () => click(key));
         keyboard.append(button);
     });
@@ -6032,4 +6032,8 @@ const removeAllChildNodes = (parent) => {
     while (parent.firstChild) {
         parent.removeChild(parent.firstChild);
     }
+}
+
+const sleep = (ms) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
