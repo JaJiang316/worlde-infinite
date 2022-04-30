@@ -5764,8 +5764,6 @@ if(word_chosen == ""){
     word_chosen = word_list[Math.floor(Math.random() * word_list.length)].toUpperCase();
 }
 
-let tries = 0;
-
 let keys = [
     'Q',
     'W',
@@ -5810,6 +5808,28 @@ let board = document.querySelector('.board');
 let currentRow = 0;
 let currentTile = 0;
 let gameOver = false;
+let currentScore = 0;
+let highScore = 0;
+let user = {};
+
+let current_Score = document.querySelector('.currentscore');
+let high_Score = document.querySelector('.highscore');
+
+window.onload = function(){
+    if(JSON.parse(localStorage.getItem('users')) != null){
+        user = JSON.parse(localStorage.getItem('users'));
+        current_Score.innerHTML = "Score: " + user.score;
+        highScore = user.highScore;
+        currentScore = user.score;
+        current_Score.setAttribute('value', user.score);
+        high_Score.innerHTML = "High Score: " + user.highScore;
+        high_Score.setAttribute('value', user.highScore);
+        word_chosen = user.word;
+        guessedRows = user.guessedRows;
+        currentRow = user.currentRow;
+        currentTile = user.currentTile;
+    }
+}
 
 guessedRows.forEach(row => {   
     const rows = document.createElement('div');
@@ -5853,8 +5873,8 @@ const addLetter = (letter) => {
         const board = document.querySelector('.board');
         const row = board.children[currentRow];
         const tile = row.children[currentTile];
-        tile.setAttribute('data', letter);
-        tile.innerHTML = letter;
+        tile.setAttribute('data', letter.toUpperCase());
+        tile.innerHTML = letter.toUpperCase();
         guessedRows[currentRow][currentTile] = letter;
         currentTile++;
     }
@@ -5881,34 +5901,59 @@ const checkRow = () => {
     });
     let guessedWord = guessWord.map(letter => letter.letter).join('');
     if(currentTile > 4 && word_list.includes(guessedWord.toLowerCase())){
-        const guess = guessedRows[currentRow].join('');
+        const guess = guessedRows[currentRow].join('').toUpperCase();
         flipTile();
         if(guess == word_chosen){
             let result = document.querySelector('.result');
             result.innerText = 'Great Job!';
             result.style.visibility = 'visible';
+            currentScore++;
+            current_Score.innerText = "Score: " + currentScore;
+            current_Score.setAttribute('value', currentScore);
+            if(currentScore > highScore){
+                highScore = currentScore;
+                high_Score.innerText = "High Score: " + highScore;
+                high_Score.setAttribute('value', highScore);
+            }
+            (async () => await new Promise(resolve => setTimeout(resolve, 5000)))();
+            // setTimeout(() => {}, 5000);
+            reloadGame();
         }
         else {
             if(currentRow >= 5){
                 let result = document.querySelector('.result');
-                result.innerText = 'Game Over!';
+                result.innerText = 'Game Over! The word was ' + word_chosen;
                 result.style.visibility = 'visible';
                 gameOver = true;
+                (async () => await new Promise(resolve => setTimeout(resolve, 5000)))();
+                reloadGame();
+                currentScore = 0;
+                current_Score.innerText = "Score: " + currentScore;
             }
-            if(currentRow < 5 && gameOver == false) {
+            else if(currentRow < 5 && gameOver == false) {
                 currentTile = 0;
                 currentRow++;
                 let result = document.querySelector('.result');
                 result.innerText = 'Try Again!';
                 result.style.visibility = 'visible';
-                setTimeout(() => { result.innerText = ''; result.style.visibility = 'hidden' }, 2000);
+                (async () => await new Promise(resolve => setTimeout(() => { result.innerText = ''; result.style.visibility = 'hidden' }, 3000)))();
+                // setTimeout(() => { result.innerText = ''; result.style.visibility = 'hidden' }, 2000);
             }
         }
+        localStorage.setItem('users', JSON.stringify({
+            score: currentScore,
+            highScore: highScore,
+            word: word_chosen,
+            guessedRows: guessedRows,
+            currentRow: currentRow,
+            currentTile: currentTile
+            }));
     }else{
         let result = document.querySelector('.result');
         result.innerText = 'Not in word list!';
         result.style.visibility = 'visible';
-        setTimeout(() => { result.innerText = ''; result.style.visibility = 'hidden' }, 2000);
+        (async () => await new Promise(resolve => setTimeout(() => { result.innerText = ''; result.style.visibility = 'hidden' }, 3000)))();
+        // setTimeout(() => { result.innerText = ''; result.style.visibility = 'hidden' }, 2000);
     }
 }
 
@@ -5948,3 +5993,43 @@ const flipTile = () => {
 const addColorKey = (letter, color) => {
     document.getElementById(letter).classList.add(color);
 };
+
+const reloadGame = () => { 
+    gameOver = false;
+    currentRow = 0;
+    currentTile = 0;
+    word_chosen = word_list[Math.floor(Math.random() * word_list.length)].toUpperCase();
+    guessedRows = [
+        ['', '', '', '', ''],
+        ['', '', '', '', ''],
+        ['', '', '', '', ''],
+        ['', '', '', '', ''],
+        ['', '', '', '', ''],
+        ['', '', '', '', '']
+    ];
+    removeAllChildNodes(board);
+    guessedRows.forEach(row => {   
+        const rows = document.createElement('div');
+        rows.setAttribute('class', 'row');
+        row.forEach(letter => {
+            const block = document.createElement('div');
+            block.setAttribute('class', 'block');
+            rows.append(block)
+        })
+        board.append(rows);
+    });
+    removeAllChildNodes(keyboard);
+    keys.forEach(key => {
+        const button = document.createElement('button');
+        button.innerText = key;
+        button.setAttribute('id', key);
+        button.addEventListener('click', () => click(key));
+        keyboard.append(button);
+    });
+}
+
+const removeAllChildNodes = (parent) => {
+    while (parent.firstChild) {
+        parent.removeChild(parent.firstChild);
+    }
+}
