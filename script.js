@@ -5933,7 +5933,6 @@ const checkRow = () => {
             }
             sleep(5000).then(() => {result.innerText = ''; result.style.visibility = 'hidden'});
             reloadGame();
-            
         }
         else {
             if(currentRow >= 5){
