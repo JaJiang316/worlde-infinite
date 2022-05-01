@@ -5828,6 +5828,22 @@ window.onload = function(){
         guessedRows = user.guessedRows;
         currentRow = user.currentRow;
         currentTile = user.currentTile;
+        removeAllChildNodes(board);
+        guessedRows.forEach((row,index) => {
+            const rows = document.createElement('div');
+            rows.setAttribute('class', 'row');
+            row.forEach(letter => {
+                const block = document.createElement('div');
+                block.setAttribute('class', 'block');
+                block.innerHTML = letter.toUpperCase();
+                block.setAttribute('data', letter.toUpperCase());
+                rows.append(block)
+            })
+            board.append(rows);
+            if(index < currentRow){
+                flipTile(index);
+            }
+        })
     }
 }
 
@@ -5924,13 +5940,13 @@ const checkRow = () => {
                 result.innerText = 'Game Over! The word was ' + word_chosen;
                 result.style.visibility = 'visible';
                 gameOver = true;
-                sleep(4000).then(() => {result.innerText = ''; result.style.visibility = 'hidden'});
+                setTimeout(() => {result.innerText = ''; result.style.visibility = 'hidden'}, 5000);
                 reloadGame();
                 currentScore = 0;
                 current_Score.innerText = "Score: " + currentScore;
             }
             else if(currentRow < 5 && gameOver == false) {
-                flipTile();
+                flipTile(currentRow);
                 currentTile = 0;
                 currentRow++;
                 let result = document.querySelector('.result');
@@ -5956,7 +5972,7 @@ const checkRow = () => {
     }
 }
 
-const flipTile = () => {
+const flipTile = (currentRow) => {
     const board = document.querySelector('.board');
     const row = board.children[currentRow].childNodes;
     const guess = [];
@@ -5966,16 +5982,19 @@ const flipTile = () => {
         guess.push({letter: tile.getAttribute('data'), color: 'grey-overlay'});
     });
 
-    guess.forEach((guess, index) => {
-        if(guess.letter == word_chosen.charAt(index)){
-            guess.color = 'green-overlay';
+    guess.forEach(guess => {
+        if(check.includes(guess.letter)){
+            guess.color = 'yellow-overlay';
             check = check.replace(guess.letter, '');
         }
     });
 
-    guess.forEach(guess => {
-        if(check.includes(guess.letter)){
-            guess.color = 'yellow-overlay';
+    guess.forEach((guess, index) => {
+        if(guess.letter == word_chosen.charAt(index)){
+            console.log(guess.letter);
+            console.log(guess);
+            console.log(word_chosen.charAt(index));
+            guess.color = 'green-overlay';
             check = check.replace(guess.letter, '');
         }
     });
@@ -5985,7 +6004,7 @@ const flipTile = () => {
             tile.classList.add(guess[index].color);
             addColorKey(guess[index].letter, guess[index].color);
             tile.classList.add('flip');
-        }, 500 * index);
+        }, 500 * (index/2));
     });
 }
 
